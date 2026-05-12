@@ -9,10 +9,10 @@ def client():
     return TestClient(app)
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def clean_activities():
-    """Reset activities to a known state before each test"""
-    # Store original state
+    """Reset activities to a known state before and after each test"""
+    # Store original state BEFORE test runs
     original_activities = {
         name: {
             "description": details["description"],
@@ -23,9 +23,13 @@ def clean_activities():
         for name, details in activities.items()
     }
     
+    # Reset state BEFORE test
+    for name in activities.keys():
+        activities[name]["participants"] = original_activities[name]["participants"].copy()
+    
     yield activities
     
-    # Restore original state after test
+    # Restore original state AFTER test
     for name in activities.keys():
         activities[name]["participants"] = original_activities[name]["participants"].copy()
 
